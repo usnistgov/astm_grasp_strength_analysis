@@ -20,3 +20,5 @@ pip install -r requirements.txt
 
 * Two Jupyer notebooks have been provided which perform different functions in the grasp analysis. First grasp_strength_initialization.ipynb analyzes a trial based on the initialization specified in the ASTM standard. grasp_strength_analysis.ipynb analyzes any number of .csv files within a folder, where each file is an independent trial for grasp strength, with any number of recorded grasps.
 
+** Test files have been provided to show how the code will work.
+
