@@ -17,7 +17,7 @@ python -m venv .astm_grasp
 source .astm_grasp/bin/activate
 ```
 
-* If using Windows, use the following in the command prompt instead
+* Create virtual environment for python (Windows)
 
 ```
 python -m venv .astm_grasp
