@@ -10,11 +10,18 @@ git clone https://github.com/usnistgov/astm_grasp_strength_analysis.git
 cd astm_grasp_strength_analysis
 ```
 
-* Create virtual environment for python
+* Create virtual environment for python (Linux)
 
 ```
 python -m venv .astm_grasp
 source .astm_grasp/bin/activate
+```
+
+* If using Windows, use the following in the command prompt instead
+
+```
+python -m venv .astm_grasp
+.astm_grasp\Scripts\activate
 ```
 
 * Install required packages
