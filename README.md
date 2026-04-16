@@ -10,11 +10,21 @@ git clone https://github.com/usnistgov/astm_grasp_strength_analysis.git
 cd astm_grasp_strength_analysis
 ```
 
+* Create virtual environment for python
+
+```
+python -m venv .astm_grasp
+source .astm_grasp/bin/activate
+```
+
 * Install required packages
 
 ```
+sudo apt-get install python3-tk
 pip install -r requirements.txt
 ```
+
+* When running the code, ensure that the kernel being used in the jupyter notebook is the one that was created earlier (.astm_grsap)
 
 ## Running the code
 
