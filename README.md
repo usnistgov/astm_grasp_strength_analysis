@@ -28,13 +28,6 @@ pip install tk
 pip install -r requirements.txt
 ```
 
-* Install required packages
-
-```
-sudo apt-get install python3-tk
-pip install -r requirements.txt
-```
-
 * When running the code, ensure that the kernel being used in the jupyter notebook is the one that was created earlier (.astm_grasp)
 
 ## Running the code
