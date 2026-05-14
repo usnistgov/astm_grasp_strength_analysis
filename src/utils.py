@@ -290,24 +290,13 @@ class GraspAnalysisUtils:
     def report_results(result: GraspAnaylsisResults, grasps: list[GraspRegion]):
 
         print(f"Filename: {result.filename}\n")
-
-        print(f"The average strength of a grasp is {round(result.mean, 2)} N")
-        print(f"The standard deviation for grasp strength is {round(result.std, 2)} N")
-        print(f"Coefficient of variation: {round(result.cv_percent, 2)}")
-        print(f"95% confidence interval: [{round(float(result.ci[0]), 2), round(float(result.ci[1]), 2)}]")
-        print(f"95% prediction interval: [{round(float(result.pi[0]), 2), round(float(result.pi[1]), 2)}]\n")
-
-        max_forces = [g.max_force for g in grasps]
-
-        print(f"Average peak force: {round(np.mean(max_forces), 2)} N")
         print(f"Number of grasps detected: {result.number_of_grasps}\n")
-
-        print(f"Margin of error: {round(result.moe,2)} N")
-        print(f"Recommended number of samples to collect: {round(result.n_required, 0)}")
-        print(f"Recommended number of samples (with buffer): {round(result.n_required_buffer, 0)}\n")
-
+        print(f"The average strength of a grasp is {round(result.mean, 2)} N")
+        print(f"95% confidence interval: [{round(float(result.ci[0]), 2), round(float(result.ci[1]), 2)}]")
+        print(f"The standard deviation for grasp strength is {round(result.std, 2)} N")
         print(f"95% Confidence interval for standard deviation: [{round(result.std_dev_interval_lwr, 2)}, {round(result.std_dev_interval_upr, 2)}]")
-        print(f"Recommended number of samples to collect based on standard deviation: {round(result.n_required_std, 0)}\n\n")
+
+        print(f"Recommended number of samples to collect: {round(result.n_required_std, 0)}\n\n")
 
 
     def create_grasp_plots(chosen_plots: list[str], force_data: np.ndarray, result: GraspAnaylsisResults, grasps: list[GraspRegion]):
