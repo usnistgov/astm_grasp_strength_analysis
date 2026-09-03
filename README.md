@@ -32,12 +32,11 @@ pip install -r requirements.txt
 
 ## Contents of Folders
 
-The src folder holds all of the code needed to perform the analysis of grasp strength for the two jupyter notebooks:
+The models folder holds the dataclasses used to present data in the jupyter notebooks:
 
-* GraspAnalysisResults.py -> contains a data class that is used to hold the results of the grasp analysis process
-* GraspRegion.py -> contains a data class the is used to contain information for a single grasp
-* InitializationAngle.py -> contains a data class that is used to hold information related to results of the grasp initialization process
-* utils.py -> contains all utility functions used in the analysis process
+* grasp_analysis_results.py -> contains a data class that is used to hold the results of the grasp analysis process
+* grasp_region.py -> contains a data class the is used to contain information for a single grasp
+* initialization_angle.py -> contains a data class that is used to hold information related to results of the grasp initialization process
 
 The test folder contains two files with example data:
 
