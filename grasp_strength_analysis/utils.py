@@ -104,7 +104,7 @@ class GraspAnalysisUtils:
         increment = simpledialog.askfloat("Initialization Parameters", "Angle increment")
         trials = simpledialog.askinteger("Initialization Parameters", "Trials per angle")
 
-        if not start_angle:
+        if start_angle is None:
             raise ValueError("Starting angle must be specified")
         if not increment:
             raise ValueError("Angle increment must be specified")
@@ -194,7 +194,7 @@ class GraspAnalysisUtils:
         return grasps
     
     @staticmethod
-    def calculate_grasp_force(force_subset: np.ndarray, grasp: GraspRegion, offset: int):
+    def calculate_grasp_force(force_subset: np.ndarray, grasp: GraspRegion):
 
         fs = 1000
         dt = 1/fs
@@ -202,6 +202,7 @@ class GraspAnalysisUtils:
         smoothed_data = signal.savgol_filter(force_subset, polyorder=3, window_length=101)
         
         orig_derivative = np.gradient(np.array(smoothed_data), dt)
+        grasp.max_force = max(force_subset)
 
         deriv_thresh = grasp.max_force * 0.10
         idx_start = 0
@@ -220,30 +221,7 @@ class GraspAnalysisUtils:
         y = force_subset[idx_start:idx_end].flatten()
         x = np.arange(1, len(y) + 1)
 
-        x_scaled = x / np.max(x)
-
-        def exp_model(x, A, k, C):
-            return A*np.exp(-k*x) + C
-        
-        p0 = [np.max(y) - np.min(y), 1.0, np.min(y)]
-
-        try:
-            popt, _ = curve_fit(exp_model, x_scaled, y, p0=p0, maxfev=2000)
-            A, k, C = popt
-
-            dydx = -A * k * np.exp(-k * x_scaled)
-
-            threshold_indicies = np.where(np.abs(dydx) < 5)[0]
-            idx_start_new = threshold_indicies[0] if len(threshold_indicies) > 0 else 0
-
-        except Exception as e:
-            print(f"Fit failed: {e}")
-
-            A, k, C = (0,0,0)
-            idx_start_new = 0
-
         grasp_segment = force_subset[idx_start:idx_end]
-        grasp.max_force = np.max(grasp_segment)
         grasp.avg_force = float(np.mean(grasp_segment))
 
         return grasp
@@ -362,7 +340,7 @@ class GraspAnalysisUtils:
             data_to_plot = [avg_force[:idx] for idx in box_indicies]
 
             plt.figure()
-            plt.boxplot(data_to_plot, label=[str(i) for i in box_indicies])
+            plt.boxplot(data_to_plot, tick_labels=[str(i) for i in box_indicies])
 
             plt.title(f"Box Plot: {filename}")
             plt.xlabel("Sample Number")
