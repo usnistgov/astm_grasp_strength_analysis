@@ -15,9 +15,9 @@ class GraspAnalysisResults:
     pi: np.ndarray
     cv_percent: float 
 
-    rolling_avg: list[float]
-    rolling_std: list[float]
-    rolling_median: list[float]
+    cumulative_avg: list[float]
+    cumulative_std: list[float]
+    cumulative_median: list[float]
 
     n_required: float 
     n_required_buffer: float 

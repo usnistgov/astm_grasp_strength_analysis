@@ -4,6 +4,8 @@ import os
 import tkinter as tk
 import numpy as np
 
+import itertools
+
 from scipy import signal, stats
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
@@ -64,8 +66,8 @@ class GraspAnalysisUtils:
         root.attributes('-topmost', True)
 
         options = ['Raw Data Plot', 'Scatter Plot of Forces', 
-                'Rolling Mean Plot', 'Rolling Standard Deviation Plot', 
-                'Rolling Median Plot', 'Box Plot'
+                'Cumulative Mean Plot', 'Cumulative Standard Deviation Plot', 
+                'Cumulative Median Plot', 'Box Plot'
                     ]
         
         checkboxes = {}
@@ -198,11 +200,11 @@ class GraspAnalysisUtils:
         dt = 1/fs
 
         smoothed_data = signal.savgol_filter(force_subset, polyorder=3, window_length=101)
-
-        orig_derivative = np.gradient(smoothed_data, dt)
-        grasp.max_force = max(force_subset)
+        
+        orig_derivative = np.gradient(np.array(smoothed_data), dt)
 
         deriv_thresh = grasp.max_force * 0.10
+        idx_start = 0
         idx_end = -1
         flag = False
 
@@ -295,7 +297,7 @@ class GraspAnalysisUtils:
         print(f"Filename: {result.filename}\n")
         print(f"Number of grasps detected: {result.number_of_grasps}\n")
         print(f"The average strength of a grasp is {round(result.mean, 2)} N")
-        print(f"95% confidence interval: [{round(float(result.ci[0]), 2), round(float(result.ci[1]), 2)}]")
+        print(f"95% confidence interval: [{round(float(result.ci[0]), 2)}, {round(float(result.ci[1]), 2)}]")
         print(f"The standard deviation for grasp strength is {round(result.std, 2)} N")
         print(f"95% Confidence interval for standard deviation: [{round(result.std_dev_interval_lwr, 2)}, {round(result.std_dev_interval_upr, 2)}]")
 
@@ -327,40 +329,40 @@ class GraspAnalysisUtils:
             plt.ylabel("Force (N)")
             plt.grid(True)
 
-        if 'Rolling Mean Plot' in chosen_plots:
+        if 'Cumulative Mean Plot' in chosen_plots:
             plt.figure()
-            plt.plot(result.rolling_avg)
+            plt.plot(result.cumulative_avg)
 
-            plt.title(f"Rolling Average for all Grasps: {filename}")
+            plt.title(f"Cumulative Average for all Grasps: {filename}")
             plt.xlabel("Sample Number")
             plt.ylabel("Force (N)")
             plt.grid(True)
 
-        if 'Rolling Standard Deviation Plot' in chosen_plots:
+        if 'Cumulative Standard Deviation Plot' in chosen_plots:
             plt.figure()
-            plt.plot(result.rolling_std)
+            plt.plot(result.cumulative_std)
 
-            plt.title(f"Rolling Standard Deviation for all Grasps: {filename}")
+            plt.title(f"Cumulative Standard Deviation for all Grasps: {filename}")
             plt.xlabel("Sample Number")
             plt.ylabel("Force (N)")
             plt.grid(True)
 
-        if 'Rolling Median Plot' in chosen_plots:
+        if 'Cumulative Median Plot' in chosen_plots:
             plt.figure()
-            plt.plot(result.rolling_median)
+            plt.plot(result.cumulative_median)
 
-            plt.title(f"Rolling Median for all Grasps: {filename}")
+            plt.title(f"Cumulative Median for all Grasps: {filename}")
             plt.xlabel("Sample Number")
             plt.ylabel("Force (N)")
             plt.grid(True)
 
         if 'Box Plot' in chosen_plots:
             step_size = 5
-            box_indicies = list(range(step_size, n_grasps + 1, step_size))
+            box_indicies = range(step_size, n_grasps + 1, step_size)
             data_to_plot = [avg_force[:idx] for idx in box_indicies]
 
             plt.figure()
-            plt.boxplot(data_to_plot, label=box_indicies)
+            plt.boxplot(data_to_plot, label=[str(i) for i in box_indicies])
 
             plt.title(f"Box Plot: {filename}")
             plt.xlabel("Sample Number")
@@ -368,38 +370,41 @@ class GraspAnalysisUtils:
             plt.grid(True)
     
     @staticmethod
-    def analyze_initialization_angles(avg_forces: list[float], start_angle: float, increment: float, trials: int, n_grasps: float) -> tuple[list[float], list[float], float, float]:
+    def analyze_initialization_angles(avg_forces: list[float], start_angle: float, increment: float, trials: int) -> tuple[float, float]:        
         average_angled_force = []
         i=0
-
-        while i < len(avg_forces):
-            angled_sum = 0
-            for j in range(int(trials)):
-                angled_sum = angled_sum + avg_forces[int(i+j)]
-            average_angled_force.append(angled_sum/trials)
-            i += trials
-
-        num_elements = int(n_grasps//trials)
-        grasp_angle_labels = [start_angle + i * increment for i in range(num_elements)]
+        
+        chunked_avg_forces = itertools.batched(avg_forces, trials)
+        
+        angle = start_angle
+        avg_force_per_angle: dict[float, float] = {}
+        
+        max_force = 0
+        max_angle = 0
+        
+        for chunk in chunked_avg_forces:
+            avg_force = sum(chunk)/trials
+            avg_force_per_angle[angle] = avg_force
+            
+            if avg_force > max_force:
+                max_force = avg_force
+                max_angle = angle
+            
+            angle += increment
 
         plt.figure()
-        plt.scatter(grasp_angle_labels, average_angled_force)
+        plt.scatter(list(avg_force_per_angle.keys()), list(avg_force_per_angle.values()))
 
         plt.title(f"Initialization Analysis")
         plt.xlabel("Angle (Degrees)")
         plt.ylabel("Force (N)")
         plt.grid(True)
 
-        angles = grasp_angle_labels
-        avg_forces_by_angle = average_angled_force
-        max_force = max(average_angled_force)
-        max_angle = grasp_angle_labels[int(np.argmax(average_angled_force))]
-
-        return angles, avg_forces_by_angle, max_force, max_angle
+        return max_force, max_angle
     
     @staticmethod
-    def report_initialization_results(filename: str, number_of_grasps: int,init_params: InitializationAngle):
+    def report_initialization_results(filename: str, number_of_grasps: int, max_force: float, max_angle: float):
         print(f"Filename: {filename}")
-        print(f"Optimal angle: {init_params.max_angle} degrees")
-        print(f"Force at optimal angle: {init_params.max_force} N")
+        print(f"Optimal angle: {max_angle} degrees")
+        print(f"Force at optimal angle: {max_force} N")
         print(f"Number of grasps analyzed: {number_of_grasps}")
