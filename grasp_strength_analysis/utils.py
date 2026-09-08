@@ -106,10 +106,12 @@ class GraspAnalysisUtils:
 
         if start_angle is None:
             raise ValueError("Starting angle must be specified")
-        if not increment:
+        if increment is None:
             raise ValueError("Angle increment must be specified")
-        if not trials:
+        if trials is None:
             raise ValueError("Trials per angle must be specified")
+        if trials <= 0:
+            raise ValueError("Trials per angle must be greater than 0")
         
         root.quit()
         root.destroy()
