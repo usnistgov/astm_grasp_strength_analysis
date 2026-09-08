@@ -155,7 +155,7 @@ class GraspAnalysisUtils:
                             n_grasps = n_grasps + 1
                             new_grasp = GraspRegion(
                                 start_idx=grasp_start,
-                                end_idx=i - 1,
+                                end_idx=i,
                                 duration=i - 1 - grasp_start,
                                 grasp_number=n_grasps,
                                 max_force=0,
@@ -170,7 +170,7 @@ class GraspAnalysisUtils:
                         n_grasps = n_grasps + 1
                         new_grasp = GraspRegion(
                             start_idx=grasp_start,
-                            end_idx=i - 1,
+                            end_idx=i,
                             duration=i - 1 - grasp_start,
                             grasp_number=n_grasps,
                             max_force=0,
@@ -181,7 +181,7 @@ class GraspAnalysisUtils:
             n_grasps = n_grasps + 1
             new_grasp = GraspRegion(
                 start_idx=grasp_start,
-                end_idx=i - 1,
+                end_idx=i,
                 duration=i - 1 - grasp_start,
                 grasp_number=n_grasps,
                 max_force=0,
@@ -194,7 +194,7 @@ class GraspAnalysisUtils:
         return grasps
     
     @staticmethod
-    def calculate_grasp_force(force_subset: np.ndarray, grasp: GraspRegion):
+    def calculate_grasp_force(force_subset: np.ndarray, grasp: GraspRegion) -> GraspRegion:
 
         fs = 1000
         dt = 1/fs
@@ -206,7 +206,7 @@ class GraspAnalysisUtils:
 
         deriv_thresh = grasp.max_force * 0.10
         idx_start = 0
-        idx_end = -1
+        idx_end = len(force_subset)
         flag = False
 
         for i, _ in enumerate(orig_derivative):
@@ -217,6 +217,7 @@ class GraspAnalysisUtils:
                 flag = True
             if np.any(abs(orig_derivative[i:i+20]) > deriv_thresh) and flag is True:
                 idx_end = i
+                flag = False
 
         y = force_subset[idx_start:idx_end].flatten()
         x = np.arange(1, len(y) + 1)
