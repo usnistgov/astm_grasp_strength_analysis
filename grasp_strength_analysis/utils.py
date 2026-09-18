@@ -1,4 +1,3 @@
-import csv
 import os
 
 import tkinter as tk
@@ -7,7 +6,6 @@ import numpy as np
 import itertools
 
 from scipy import signal, stats
-from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from numpy import ndarray
 from tkinter import filedialog, simpledialog
@@ -126,9 +124,9 @@ class GraspAnalysisUtils:
     @staticmethod 
     def load_and_preprocess_data(filepath: str) -> np.ndarray:
         
-        matrix = np.loadtxt(open(filepath, "rb"), delimiter=",", skiprows=1)
+        matrix = np.loadtxt(open(filepath, "rb"), delimiter=",")
 
-        baselined_matrix = matrix - matrix[0,:]
+        baselined_matrix = matrix - np.mean(matrix[0:10,:], axis=0)
 
         force_data = np.sum(baselined_matrix[:,[0,1,2]], axis=1)
 
@@ -158,7 +156,7 @@ class GraspAnalysisUtils:
                             new_grasp = GraspRegion(
                                 start_idx=grasp_start,
                                 end_idx=i,
-                                duration=i - 1 - grasp_start,
+                                duration=i - grasp_start,
                                 grasp_number=n_grasps,
                                 max_force=0,
                                 avg_force=0
@@ -173,18 +171,19 @@ class GraspAnalysisUtils:
                         new_grasp = GraspRegion(
                             start_idx=grasp_start,
                             end_idx=i,
-                            duration=i - 1 - grasp_start,
+                            duration=i - grasp_start,
                             grasp_number=n_grasps,
                             max_force=0,
                             avg_force=0
                         )
+                        in_grasp = False
                         grasps.append(new_grasp)
         if in_grasp and n_grasps < max_grasps:
             n_grasps = n_grasps + 1
             new_grasp = GraspRegion(
                 start_idx=grasp_start,
                 end_idx=i,
-                duration=i - 1 - grasp_start,
+                duration=i - grasp_start,
                 grasp_number=n_grasps,
                 max_force=0,
                 avg_force=0
@@ -196,12 +195,19 @@ class GraspAnalysisUtils:
         return grasps
     
     @staticmethod
-    def calculate_grasp_force(force_subset: np.ndarray, grasp: GraspRegion) -> GraspRegion:
-
-        fs = 1000
+    def calculate_grasp_force(force_subset: np.ndarray, grasp: GraspRegion, fs: int) -> GraspRegion:
+        
         dt = 1/fs
-
-        smoothed_data = signal.savgol_filter(force_subset, polyorder=3, window_length=101)
+        
+        window_len = 101
+        
+        if len(force_subset) < 101:
+            window_len = len(force_subset) if len(force_subset) % 2 !=0 else len(force_subset)-1
+        
+        if window_len < 4:
+            smoothed_data = force_subset
+        else:
+            smoothed_data = signal.savgol_filter(force_subset, polyorder=3, window_length=window_len)
         
         orig_derivative = np.gradient(np.array(smoothed_data), dt)
         grasp.max_force = max(force_subset)
@@ -221,19 +227,19 @@ class GraspAnalysisUtils:
                 idx_end = i
                 flag = False
 
-        y = force_subset[idx_start:idx_end].flatten()
-        x = np.arange(1, len(y) + 1)
-
         grasp_segment = force_subset[idx_start:idx_end]
         grasp.avg_force = float(np.mean(grasp_segment))
 
         return grasp
     
     @staticmethod
-    def calculate_grasp_statistics(n_grasps: int, grasps: list[GraspRegion])-> tuple[float, float, float, ndarray, ndarray, ndarray, float]:
+    def calculate_grasp_statistics(n_grasps: int, grasps: list[GraspRegion])-> tuple[float, float, float, ndarray, ndarray, ndarray, float]|None:
         avg_forces = [g.avg_force for g in grasps]
-
         mean = float(np.mean(avg_forces))
+        
+        if n_grasps == 1:
+            return None 
+        
         std = float(np.std(avg_forces))
         sem = std / np.sqrt(n_grasps)
         ts = stats.t.ppf([0.025, 0.975], n_grasps-1)
@@ -352,16 +358,14 @@ class GraspAnalysisUtils:
     
     @staticmethod
     def analyze_initialization_angles(avg_forces: list[float], start_angle: float, increment: float, trials: int) -> tuple[float, float]:        
-        average_angled_force = []
-        i=0
         
         chunked_avg_forces = itertools.batched(avg_forces, trials)
         
         angle = start_angle
         avg_force_per_angle: dict[float, float] = {}
         
-        max_force = 0
-        max_angle = 0
+        max_force = float('-inf')
+        max_angle = float('-inf')
         
         for chunk in chunked_avg_forces:
             avg_force = sum(chunk)/trials
