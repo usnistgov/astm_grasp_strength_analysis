@@ -30,7 +30,7 @@ pip install -r requirements.txt
 
 * When running the code, ensure that the kernel being used in the jupyter notebook is the one that was created earlier (.astm_grasp)
 
-## Contents of Folders
+## Models
 
 The models folder holds the dataclasses used to present data in the jupyter notebooks:
 
@@ -38,15 +38,17 @@ The models folder holds the dataclasses used to present data in the jupyter note
 * grasp_region.py -> contains a data class the is used to contain information for a single grasp
 * initialization_angle.py -> contains a data class that is used to hold information related to results of the grasp initialization process
 
-The test folder contains two files with example data:
+## Provided Data
 
-* robotiq_cylinder/RobotIQ_60SFMA_50Cycles_Cyl.csv -> a csv file containing 3 columns of data, each column corresponding to to one of the force sensors in the SFMA. Units for this data are in Newtons
-* robotiq_initialization/RobotIQ_70SFMA_33Cycles_DeterminePositionMaxGraspStrength.csv -> a csv file containing 3 columns of data, each column corresponding to one of the force sensors in the SFMA. The data is captured where 3 grasps are recorded at each angle increment. Units for this data are in Newtons
+The sample_data folder contains two files with example data:
+
+* robotiq_cylinder/RobotIQ_60SFMA_50Cycles_Cyl.csv -> a csv file containing 3 columns of data, each column corresponding to to one of the force sensors in the SFMA. This data includes 50 grasps in a single trial. Units for this data are in Newtons.
+* robotiq_initialization/RobotIQ_70SFMA_33Cycles_DeterminePositionMaxGraspStrength.csv -> a csv file containing 3 columns of data, each column corresponding to one of the force sensors in the SFMA. The data is captured where 3 grasps are recorded at each angle increment. Units for this data are in Newtons.
 
 
 ## Running the code
 
-* Two Jupyer notebooks have been provided which perform different functions in the grasp analysis. First, grasp_strength_initialization.ipynb analyzes a trial (single csv file) based on the initialization specified in the ASTM standard. Second, grasp_strength_analysis.ipynb analyzes any number of .csv files within a directory, where each file is an independent trial (single csv file) for grasp strength, with any number of recorded grasps.
+* Two Jupyer notebooks have been provided which perform different functions in the grasp analysis. First, initialization.ipynb analyzes a trial (single csv file) based on the initialization specified in the ASTM standard. Second, analysis.ipynb analyzes any number of .csv files within a directory, where each file is an independent trial (single csv file) for grasp strength, with any number of recorded grasps.
 
 ** Test files have been provided to show how the code will work.
 
