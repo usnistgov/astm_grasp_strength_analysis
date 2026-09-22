@@ -45,6 +45,8 @@ The sample_data folder contains two files with example data:
 * robotiq_cylinder/RobotIQ_60SFMA_50Cycles_Cyl.csv -> a csv file containing 3 columns of data, each column corresponding to to one of the force sensors in the SFMA. This data includes 50 grasps in a single trial. Units for this data are in Newtons.
 * robotiq_initialization/RobotIQ_70SFMA_33Cycles_DeterminePositionMaxGraspStrength.csv -> a csv file containing 3 columns of data, each column corresponding to one of the force sensors in the SFMA. The data is captured where 3 grasps are recorded at each angle increment. Units for this data are in Newtons.
 
+The data was collected utilizing the SFMA detailed in the associated standard. The SFMA was fitted with three single axis force sensors. This accounts for the three columns of data output within the provided CSV files. Each file contains a number of grasps collected for the specific test being performed collected in a continuous stream. Additional data is expected to be formatted similar to this for proper results.
+
 
 ## Running the code
 
