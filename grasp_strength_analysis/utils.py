@@ -225,7 +225,7 @@ class GraspAnalysisUtils:
                 flag = True
             if np.any(abs(orig_derivative[i:i+20]) > deriv_thresh) and flag is True:
                 idx_end = i
-                flag = False
+                break
 
         grasp_segment = force_subset[idx_start:idx_end]
         grasp.avg_force = float(np.mean(grasp_segment))
@@ -253,7 +253,7 @@ class GraspAnalysisUtils:
     def calculate_required_samples(mean: float, std: float, number_of_grasps: int)-> tuple[float, float, float, float, float, int]|None:
         z = 1.96
         s = std
-        E = 0.01 * mean
+        E = 0.02 * mean
 
         moe = z*s/np.sqrt(number_of_grasps)
         n_required = (z*s/E)**2
