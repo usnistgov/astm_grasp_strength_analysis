@@ -124,8 +124,17 @@ class GraspAnalysisUtils:
     @staticmethod 
     def load_and_preprocess_data(filepath: str) -> np.ndarray:
         
-        matrix = np.loadtxt(open(filepath, "rb"), delimiter=",")
+        with open(filepath, "r") as f:
+            first_row = f.readline().strip().split(",")
 
+        try:
+            [float(value) for value in first_row]
+            skiprows = 0  # First row contains numeric data
+        except ValueError:
+            skiprows = 1  # First row contains a header
+
+        matrix = np.loadtxt(filepath, delimiter=",", skiprows=skiprows)
+        
         baselined_matrix = matrix - np.mean(matrix[0:10,:], axis=0)
 
         force_data = np.sum(baselined_matrix[:,[0,1,2]], axis=1)
